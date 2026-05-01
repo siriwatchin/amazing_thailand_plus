@@ -174,7 +174,7 @@ export default function AppPage() {
   const activeRoute = routes.find((r) => r.id === "king-naresuan") ?? routes[0];
 
   return (
-    <div className="min-h-screen bg-page flex flex-col">
+    <div className="min-h-screen bg-page flex flex-col overflow-x-hidden">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur-md border-b border-gold/15 shadow-sm">
@@ -440,11 +440,11 @@ export default function AppPage() {
                   transition={{ delay: 0.15 }}
                   className="rounded-2xl border border-gold/15 bg-surface shadow-card p-4"
                 >
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-3 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-gold/12 flex items-center justify-center">
                       <Bot className="w-4 h-4 text-gold" />
                     </div>
-                    <p className="font-semibold text-ink text-sm">AI Travel Guide</p>
+                    <p className="font-semibold text-ink text-sm truncate">AI Travel Guide</p>
                   </div>
                   <form
                     onSubmit={(e) => {
@@ -455,14 +455,14 @@ export default function AppPage() {
                       setTab("guide");
                       askGuide(q);
                     }}
-                    className="flex items-center gap-2 bg-page border border-gold/20 rounded-xl px-3 py-2.5 mb-3 focus-within:border-gold"
+                    className="flex items-center gap-2 bg-page border border-gold/20 rounded-xl px-3 py-2.5 mb-3 focus-within:border-gold min-w-0"
                   >
                     <input
                       type="text"
                       value={guideInput}
                       onChange={(e) => setGuideInput(e.target.value)}
                       placeholder="Ask anything…"
-                      className="flex-1 bg-transparent text-xs text-ink placeholder:text-ink/30 focus:outline-none"
+                      className="min-w-0 flex-1 bg-transparent text-xs text-ink placeholder:text-ink/30 focus:outline-none"
                     />
                     <button
                       type="submit"
@@ -478,7 +478,7 @@ export default function AppPage() {
                       <button
                         key={q}
                         onClick={() => { setTab("guide"); askGuide(q); }}
-                        className="text-left text-[11px] text-ink/55 hover:text-ink px-3 py-1.5 rounded-lg bg-page hover:bg-gold/8 border border-transparent hover:border-gold/20 transition-all"
+                        className="text-left text-[11px] text-ink/55 hover:text-ink px-3 py-1.5 rounded-lg bg-page hover:bg-gold/8 border border-transparent hover:border-gold/20 transition-all break-words"
                       >
                         → {q}
                       </button>
@@ -636,39 +636,40 @@ export default function AppPage() {
 
           {/* ── ROUTES TAB ───────────────────────────────────────────── */}
           {tab === "routes" && (
-            <motion.div key="routes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <motion.div key="routes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="min-w-0 overflow-hidden">
               <div className="mb-6">
                 <h1 className="font-serif text-2xl text-ink">Story Routes</h1>
                 <p className="text-ink/45 text-sm mt-1">Government-verified · Expert-curated · 340+ routes</p>
               </div>
 
-              <div className="rounded-2xl border border-gold/15 bg-surface shadow-card p-5 mb-6">
-                <div className="grid md:grid-cols-5 gap-5 items-start">
-                  <div className="md:col-span-2">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-8 h-8 rounded-xl bg-gold/12 flex items-center justify-center">
+              <div className="rounded-2xl border border-gold/15 bg-surface shadow-card p-4 sm:p-5 mb-6 overflow-hidden max-w-full">
+                <div className="grid md:grid-cols-5 gap-4 md:gap-5 items-start min-w-0">
+                  <div className="md:col-span-2 min-w-0 overflow-hidden">
+                    <div className="flex items-center gap-2 mb-3 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-gold/12 flex items-center justify-center flex-shrink-0">
                         <Sparkles className="w-4 h-4 text-gold" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-ink text-sm">Create Route with AI</p>
-                        <p className="text-[11px] text-ink/40">Try the Phuket series trail prompt</p>
+                      <div className="min-w-0">
+                        <p className="font-semibold text-ink text-sm truncate">Create Route with AI</p>
+                        <p className="text-[11px] text-ink/40 truncate">Try the Phuket series trail prompt</p>
                       </div>
                     </div>
-                    <form onSubmit={generateStoryRoute} className="flex flex-col gap-3">
+                    <form onSubmit={generateStoryRoute} className="flex flex-col gap-3 min-w-0 max-w-full overflow-hidden">
                       <textarea
                         value={routePrompt}
                         onChange={(e) => setRoutePrompt(e.target.value)}
                         rows={4}
-                        className="w-full bg-page border border-gold/22 rounded-xl px-3.5 py-3 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/12 resize-none"
+                        className="block w-full max-w-full min-w-0 bg-page border border-gold/22 rounded-xl px-3.5 py-3 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/12 resize-none break-words"
                         placeholder="Tell AI what kind of route to create..."
                       />
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 min-w-0 max-w-full overflow-hidden">
                         {ROUTE_AI_EXAMPLES.map((p) => (
                           <button
                             key={p}
                             type="button"
                             onClick={() => setRoutePrompt(p)}
-                            className="text-[10px] text-ink/45 hover:text-ink border border-ink/10 hover:border-gold/40 px-2 py-0.5 rounded-full transition-colors"
+                            className="max-w-full text-left text-[10px] text-ink/45 hover:text-ink border border-ink/10 hover:border-gold/40 px-2 py-0.5 rounded-full transition-colors truncate"
+                            title={p}
                           >
                             {p}
                           </button>
@@ -677,7 +678,7 @@ export default function AppPage() {
                       <button
                         type="submit"
                         disabled={routeGenerating || !routePrompt.trim()}
-                        className="inline-flex items-center justify-center gap-2 bg-earth text-surface text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-earth-light transition-colors disabled:opacity-50"
+                        className="inline-flex w-full max-w-full items-center justify-center gap-2 bg-earth text-surface text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-earth-light transition-colors disabled:opacity-50"
                       >
                         {routeGenerating ? (
                           <>
@@ -694,7 +695,7 @@ export default function AppPage() {
                     </form>
                   </div>
 
-                  <div className="md:col-span-3">
+                  <div className="md:col-span-3 min-w-0 overflow-hidden">
                     {routeGenerating && (
                       <div className="min-h-[260px] rounded-2xl border border-gold/15 bg-page flex flex-col items-center justify-center gap-3">
                         <Loader2 className="w-7 h-7 text-gold animate-spin" />
@@ -888,8 +889,8 @@ export default function AppPage() {
                 <h1 className="font-serif text-2xl text-ink">AI Travel Guide</h1>
                 <p className="text-ink/45 text-sm mt-1">Every answer sourced from TAT, Tourist Police & expert historians</p>
               </div>
-              <div className="grid md:grid-cols-5 gap-6 items-start">
-                <div className="md:col-span-2 flex flex-col gap-2">
+              <div className="grid md:grid-cols-5 gap-4 md:gap-6 items-start min-w-0">
+                <div className="md:col-span-2 flex flex-col gap-2 min-w-0">
                   <form
                     onSubmit={handleGuideSubmit}
                     className="flex items-center gap-2 bg-surface border border-gold/22 rounded-xl px-3 py-2.5 mb-1 focus-within:border-gold focus-within:ring-2 focus-within:ring-gold/12"
@@ -899,7 +900,7 @@ export default function AppPage() {
                       value={guideInput}
                       onChange={(e) => setGuideInput(e.target.value)}
                       placeholder="Type any question…"
-                      className="flex-1 bg-transparent text-sm text-ink placeholder:text-ink/30 focus:outline-none"
+                      className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-ink/30 focus:outline-none"
                     />
                     <button
                       type="submit"
@@ -917,7 +918,7 @@ export default function AppPage() {
                     <button
                       key={q}
                       onClick={() => askGuide(q)}
-                      className={`text-left px-4 py-3.5 rounded-2xl border text-sm transition-all ${
+                      className={`w-full text-left px-4 py-3.5 rounded-2xl border text-sm leading-snug break-words transition-all ${
                         guideQ === q
                           ? "border-earth bg-earth/8 text-ink font-medium"
                           : "border-gold/20 bg-surface text-ink/65 hover:border-earth/40 hover:text-ink"
@@ -927,7 +928,7 @@ export default function AppPage() {
                     </button>
                   ))}
                 </div>
-                <div className="md:col-span-3 rounded-2xl border border-gold/15 bg-surface shadow-card min-h-[280px] p-5">
+                <div className="md:col-span-3 min-w-0 overflow-hidden rounded-2xl border border-gold/15 bg-surface shadow-card min-h-[280px] p-4 sm:p-5">
                   {!guideQ && !guideTyping && (
                     <div className="flex flex-col items-center justify-center h-[240px] gap-3 text-center">
                       <div className="w-12 h-12 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center">
@@ -948,23 +949,23 @@ export default function AppPage() {
                     </div>
                   )}
                   {guideAnswer && !guideTyping && (
-                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                      <div className="self-end bg-earth/10 border border-earth/20 rounded-2xl rounded-br-sm px-4 py-2.5 mb-4 w-fit ml-auto">
-                        <p className="text-ink text-sm font-medium">{guideAnswer.question}</p>
+                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="min-w-0">
+                      <div className="self-end bg-earth/10 border border-earth/20 rounded-2xl rounded-br-sm px-3.5 sm:px-4 py-2.5 mb-4 w-fit max-w-full sm:max-w-[85%] ml-auto">
+                        <p className="text-ink text-sm font-medium break-words">{guideAnswer.question}</p>
                       </div>
-                      <div className="flex gap-3 items-start">
+                      <div className="flex gap-2 sm:gap-3 items-start min-w-0">
                         <div className="w-7 h-7 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center flex-shrink-0">
                           <Bot className="w-4 h-4 text-gold" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="bg-page border border-gold/15 rounded-2xl rounded-tl-sm px-4 py-3">
-                            <p className="text-ink/80 text-sm leading-relaxed whitespace-pre-wrap">{guideAnswer.answer}</p>
+                          <div className="bg-page border border-gold/15 rounded-2xl rounded-tl-sm px-3.5 sm:px-4 py-3">
+                            <p className="text-ink/80 text-sm leading-relaxed whitespace-pre-wrap break-words">{guideAnswer.answer}</p>
                           </div>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             {guideAnswer.citations.map((c) => (
                               <span
                                 key={c.source}
-                                className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                                className="max-w-full text-[10px] font-semibold px-2.5 py-1 rounded-full break-words"
                                 style={{ background: `${c.trustColor}18`, color: c.trustColor }}
                               >
                                 ✓ {c.trustLabel}
@@ -974,7 +975,7 @@ export default function AppPage() {
                               Confidence: {guideAnswer.confidence}
                             </span>
                           </div>
-                          <p className="text-[10px] text-ink/35 mt-1.5">
+                          <p className="text-[10px] text-ink/35 mt-1.5 break-words">
                             {guideAnswer.citations.map((c) => c.source).join(" · ")}
                           </p>
                         </div>
