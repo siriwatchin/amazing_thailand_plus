@@ -231,7 +231,7 @@ export default function RouteDetailPage() {
     setTimeout(() => setJustCollectedId(null), 1800);
   };
   const routeImageKey = imageRouteId(routeShell.id);
-  const showPhuketMap = Boolean(generated && !loading && isItsayRouteId(routeShell.id));
+  const showPhuketMap = Boolean(generated && !loading);
 
   return (
     <div className="min-h-screen bg-page pb-24">
