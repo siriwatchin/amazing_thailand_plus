@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Map, Bot, Stamp, ShieldAlert, LogOut, Bell,
@@ -14,6 +15,7 @@ import { passportStamps, passportMeta } from "@/data/passport";
 import { getProvider } from "@/lib/ai/provider";
 import type { GuideAnswer } from "@/lib/ai/types";
 import { useLocalStorage } from "@/lib/useLocalStorage";
+import { ROUTE_HERO_IMAGES } from "@/data/images";
 
 const PASSPORT_STORAGE_KEY = "atp_collected_stamps";
 
@@ -208,29 +210,46 @@ export default function AppPage() {
                   transition={{ delay: 0.05 }}
                   className="md:col-span-3 rounded-2xl overflow-hidden border border-gold/15 shadow-card"
                 >
-                  {/* Card header — dark gradient */}
+                  {/* Card header — photo + dark gradient overlay */}
                   <div
-                    className="px-5 py-4 flex items-start justify-between"
+                    className="relative px-5 py-4 flex items-start justify-between min-h-[140px] overflow-hidden"
                     style={{ background: `linear-gradient(135deg, ${activeRoute.gradientFrom}, ${activeRoute.gradientTo})` }}
                   >
-                    <div>
+                    {ROUTE_HERO_IMAGES[activeRoute.id] && (
+                      <>
+                        <Image
+                          src={ROUTE_HERO_IMAGES[activeRoute.id]}
+                          alt=""
+                          fill
+                          sizes="(max-width: 768px) 100vw, 600px"
+                          className="object-cover opacity-70"
+                        />
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            background: `linear-gradient(135deg, ${activeRoute.gradientFrom}AA 0%, ${activeRoute.gradientTo}55 70%, transparent 100%)`,
+                          }}
+                        />
+                      </>
+                    )}
+                    <div className="relative">
                       <span
-                        className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
-                        style={{ background: `${activeRoute.accentColor}28`, color: activeRoute.accentColor }}
+                        className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full backdrop-blur-md"
+                        style={{ background: `${activeRoute.accentColor}D9`, color: "#FBF6EE" }}
                       >
                         {activeRoute.badge}
                       </span>
-                      <h2 className="font-serif text-lg text-surface mt-2 leading-snug">
+                      <h2 className="font-serif text-lg text-surface mt-2 leading-snug drop-shadow-md">
                         {activeRoute.name}
                       </h2>
-                      <p className="text-surface/45 text-xs mt-0.5 font-mono">
+                      <p className="text-surface/70 text-xs mt-0.5 font-mono">
                         {activeRoute.duration} · {activeRoute.region}
                       </p>
                     </div>
-                    <div className="flex-shrink-0 text-right">
-                      <p className="text-[10px] text-surface/40 uppercase tracking-widest">Day</p>
-                      <p className="font-serif text-3xl font-bold text-gold leading-none">2</p>
-                      <p className="text-[10px] text-surface/40">of 2</p>
+                    <div className="relative flex-shrink-0 text-right">
+                      <p className="text-[10px] text-surface/60 uppercase tracking-widest">Day</p>
+                      <p className="font-serif text-3xl font-bold text-gold leading-none drop-shadow-md">2</p>
+                      <p className="text-[10px] text-surface/60">of 2</p>
                     </div>
                   </div>
 
@@ -488,12 +507,29 @@ export default function AppPage() {
                         className="block rounded-2xl overflow-hidden border border-gold/15 shadow-card hover:shadow-card-hover transition-shadow group"
                       >
                         <div
-                          className="h-16 px-4 py-3 flex items-end"
+                          className="relative h-24 px-4 py-3 flex items-end overflow-hidden"
                           style={{ background: `linear-gradient(135deg, ${route.gradientFrom}, ${route.gradientTo})` }}
                         >
+                          {ROUTE_HERO_IMAGES[route.id] && (
+                            <>
+                              <Image
+                                src={ROUTE_HERO_IMAGES[route.id]}
+                                alt=""
+                                fill
+                                sizes="(max-width: 640px) 100vw, 320px"
+                                className="object-cover opacity-75 transition-transform duration-700 group-hover:scale-105"
+                              />
+                              <div
+                                className="absolute inset-0"
+                                style={{
+                                  background: `linear-gradient(180deg, transparent 30%, ${route.gradientTo}AA 100%)`,
+                                }}
+                              />
+                            </>
+                          )}
                           <span
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                            style={{ background: `${route.accentColor}28`, color: route.accentColor }}
+                            className="relative text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-md"
+                            style={{ background: `${route.accentColor}D9`, color: "#FBF6EE" }}
                           >
                             {route.badge}
                           </span>
@@ -525,18 +561,35 @@ export default function AppPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {routes.map((route) => (
-                  <div key={route.id} className="rounded-2xl overflow-hidden border border-gold/15 shadow-card bg-surface">
+                  <div key={route.id} className="rounded-2xl overflow-hidden border border-gold/15 shadow-card bg-surface group">
                     <div
-                      className="h-24 px-5 py-4 flex flex-col justify-end"
+                      className="relative h-36 px-5 py-4 flex flex-col justify-end overflow-hidden"
                       style={{ background: `linear-gradient(135deg, ${route.gradientFrom}, ${route.gradientTo})` }}
                     >
+                      {ROUTE_HERO_IMAGES[route.id] && (
+                        <>
+                          <Image
+                            src={ROUTE_HERO_IMAGES[route.id]}
+                            alt=""
+                            fill
+                            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 360px"
+                            className="object-cover opacity-75 transition-transform duration-700 group-hover:scale-105"
+                          />
+                          <div
+                            className="absolute inset-0"
+                            style={{
+                              background: `linear-gradient(180deg, transparent 30%, ${route.gradientTo}CC 100%)`,
+                            }}
+                          />
+                        </>
+                      )}
                       <span
-                        className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full w-fit mb-2"
-                        style={{ background: `${route.accentColor}28`, color: route.accentColor }}
+                        className="relative text-[10px] font-semibold px-2.5 py-0.5 rounded-full w-fit mb-2 backdrop-blur-md"
+                        style={{ background: `${route.accentColor}D9`, color: "#FBF6EE" }}
                       >
                         {route.badge}
                       </span>
-                      <h3 className="font-serif text-surface text-base font-semibold leading-snug">{route.name}</h3>
+                      <h3 className="relative font-serif text-surface text-base font-semibold leading-snug drop-shadow-md">{route.name}</h3>
                     </div>
                     <div className="p-4">
                       <p className="text-xs text-ink/50 mb-3 leading-relaxed">{route.tagline}</p>
