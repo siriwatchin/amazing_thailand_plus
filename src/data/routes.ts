@@ -4,6 +4,11 @@ export interface Route {
   tagline: string;
   badge: string;
   badgeColor: string;
+  creator: {
+    type: "admin" | "guide" | "ai";
+    label: string;
+    name: string;
+  };
   duration: string;
   difficulty: "Easy" | "Moderate" | "Hard";
   highlights: string[];
@@ -21,6 +26,11 @@ export const routes: Route[] = [
     tagline: "Follow iconic series locations across Bangkok and Hua Hin.",
     badge: "Soft Power Route",
     badgeColor: "#D6447A",           // lotus pink — ชมพูบัว · drama/festival
+    creator: {
+      type: "ai",
+      label: "AI Gen",
+      name: "ATP Route Builder",
+    },
     duration: "3 Days / 2 Nights",
     difficulty: "Moderate",
     highlights: [
@@ -36,11 +46,41 @@ export const routes: Route[] = [
     icon: "Star",
   },
   {
+    id: "i-told-sunset-about-you",
+    name: "I Told Sunset About You Phuket Trail",
+    tagline: "Follow Tae and Oh-aew through Phuket Old Town, Saphan Hin, Karon, and Cape Panwa.",
+    badge: "Series Location Route",
+    badgeColor: "#D6447A",
+    creator: {
+      type: "guide",
+      label: "Guide",
+      name: "Phuket Film Location Guide",
+    },
+    duration: "3 Days / 2 Nights",
+    difficulty: "Easy",
+    highlights: [
+      "Soi Romanee & Thalang Road",
+      "Satree Phuket School",
+      "Kantary Cafe at Cape Panwa",
+      "Promthep Cape sunset",
+    ],
+    region: "Phuket",
+    gradientFrom: "#8C2C50",
+    gradientTo:   "#1A2E16",
+    accentColor:  "#D6447A",
+    icon: "Star",
+  },
+  {
     id: "king-naresuan",
     name: "King Naresuan Legacy Route",
     tagline: "A cited historical journey through Ayutthaya, Suphan Buri, and Phitsanulok.",
     badge: "Reviewed by Historian",
     badgeColor: "#C9922A",           // antique gold — ทองโบราณ
+    creator: {
+      type: "guide",
+      label: "Guide",
+      name: "Historian Curator",
+    },
     duration: "2 Days / 1 Night",
     difficulty: "Easy",
     highlights: [
@@ -61,6 +101,11 @@ export const routes: Route[] = [
     tagline: "Collect verified digital stamps across Thailand's national parks.",
     badge: "Verified by DNP",
     badgeColor: "#4A8C5C",           // forest canopy green
+    creator: {
+      type: "admin",
+      label: "Admin",
+      name: "TAT + DNP Team",
+    },
     duration: "7 Days / 6 Nights",
     difficulty: "Hard",
     highlights: [

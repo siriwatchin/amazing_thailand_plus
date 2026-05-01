@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ROUTE_HERO_IMAGES, ROUTE_DETAIL_IMAGES } from "@/data/images";
+import PhuketRouteMap from "@/components/PhuketRouteMap";
 import {
   ArrowLeft,
   Play,
@@ -24,11 +25,76 @@ import type { GeneratedRoute, GeneratedStop } from "@/lib/ai/types";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 
 const PASSPORT_STORAGE_KEY = "atp_collected_stamps";
+const GENERATED_ROUTES_STORAGE_KEY = "atp_generated_routes";
+
+const creatorColor: Record<Route["creator"]["type"], string> = {
+  admin: "#2D5A3D",
+  guide: "#C9922A",
+  ai: "#1A8A7A",
+};
+
+function creatorMeta(
+  creator?: { type: "admin" | "guide" | "ai"; label: string; name: string },
+) {
+  const fallback = { type: "ai" as const, label: "AI Gen", name: "ATP Route Builder" };
+  const c = creator ?? fallback;
+  return { ...c, color: creatorColor[c.type] };
+}
+
+function isItsayRouteId(id: string) {
+  return id === "i-told-sunset-about-you" || /^route-itsay-phuket-\d+$/.test(id);
+}
+
+function itsayDaysFromId(id: string) {
+  const match = id.match(/^route-itsay-phuket-(\d+)$/);
+  return match ? Number(match[1]) : 3;
+}
+
+function generatedItsayRouteShell(id: string): Route | null {
+  if (!isItsayRouteId(id) || id === "i-told-sunset-about-you") return null;
+  const days = itsayDaysFromId(id);
+  return {
+    id,
+    name: "I Told Sunset About You · Phuket Series Trail",
+    tagline:
+      "Follow Tae and Oh-aew through Phuket Old Town, Saphan Hin, Karon, Cape Panwa, and Promthep Cape.",
+    badge: "AI Generated",
+    badgeColor: "#D6447A",
+    creator: {
+      type: "ai",
+      label: "AI Gen",
+      name: "ATP Route Builder",
+    },
+    duration: `${days} Days`,
+    difficulty: "Easy",
+    highlights: [
+      "Phuket Old Town",
+      "Saphan Hin",
+      "Cape Panwa",
+      "Promthep Cape",
+    ],
+    region: "Phuket",
+    gradientFrom: "#8C2C50",
+    gradientTo: "#1A2E16",
+    accentColor: "#D6447A",
+    icon: "Sparkles",
+  };
+}
+
+function imageRouteId(routeId: string) {
+  return isItsayRouteId(routeId) ? "i-told-sunset-about-you" : routeId;
+}
 
 function ROUTE_PROMPTS(r: Route): string {
+  if (isItsayRouteId(r.id)) {
+    return `ตามรอยแปลรักฉันด้วยใจเธอ I Told Sunset About You ที่ภูเก็ต ${itsayDaysFromId(r.id)} วัน`;
+  }
+
   switch (r.id) {
     case "phiang-ther":
       return "Follow the Phiang Ther series across Bangkok and Hua Hin for 3 days";
+    case "i-told-sunset-about-you":
+      return "ตามรอยแปลรักฉันด้วยใจเธอ I Told Sunset About You ที่ภูเก็ต 3 วัน";
     case "king-naresuan":
       return "King Naresuan history trail from Ayutthaya to Suphan Buri for 2 days";
     case "national-park-passport":
@@ -43,11 +109,13 @@ export default function RouteDetailPage() {
   const router = useRouter();
 
   const baseRoute = useMemo(
-    () => routes.find((r) => r.id === params.id),
+    () => routes.find((r) => r.id === params.id) ?? generatedItsayRouteShell(params.id),
     [params.id],
   );
 
   const [generated, setGenerated] = useState<GeneratedRoute | null>(null);
+  const [savedRoute, setSavedRoute] = useState<GeneratedRoute | null>(null);
+  const [checkedSavedRoute, setCheckedSavedRoute] = useState(false);
   const [loading, setLoading] = useState(true);
   const [audioStop, setAudioStop] = useState<GeneratedStop | null>(null);
   const [collectedIds, setCollectedIds] = useLocalStorage<string[]>(
@@ -57,7 +125,34 @@ export default function RouteDetailPage() {
   const [justCollectedId, setJustCollectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!baseRoute) return;
+    if (baseRoute) {
+      setSavedRoute(null);
+      setCheckedSavedRoute(true);
+      return;
+    }
+
+    try {
+      const raw = window.localStorage.getItem(GENERATED_ROUTES_STORAGE_KEY);
+      const saved = raw ? (JSON.parse(raw) as GeneratedRoute[]) : [];
+      setSavedRoute(saved.find((r) => r.id === params.id) ?? null);
+    } catch {
+      setSavedRoute(null);
+    }
+    setCheckedSavedRoute(true);
+  }, [baseRoute, params.id]);
+
+  useEffect(() => {
+    if (savedRoute) {
+      setGenerated(savedRoute);
+      setLoading(false);
+      return;
+    }
+
+    if (!baseRoute) {
+      if (checkedSavedRoute) setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     getProvider()
@@ -75,9 +170,39 @@ export default function RouteDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [baseRoute]);
+  }, [baseRoute, checkedSavedRoute, savedRoute]);
 
-  if (!baseRoute) {
+  const routeShell = baseRoute ?? (savedRoute ? {
+    id: savedRoute.id,
+    name: savedRoute.title,
+    tagline: savedRoute.summary,
+    badge: "AI Generated",
+    badgeColor: savedRoute.accentColor,
+    duration: `${savedRoute.durationDays} Days`,
+    difficulty: "Moderate" as Route["difficulty"],
+    highlights: savedRoute.badges.map((b) => b.label),
+    creator: creatorMeta(savedRoute.creator),
+    region: savedRoute.region,
+    gradientFrom: savedRoute.gradientFrom,
+    gradientTo: savedRoute.gradientTo,
+    accentColor: savedRoute.accentColor,
+    icon: "Sparkles",
+  } : null);
+
+  if (!routeShell && !checkedSavedRoute) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-page">
+        <div className="relative w-12 h-12">
+          <div
+            className="absolute inset-0 rounded-full animate-spin"
+            style={{ border: "2px solid transparent", borderTopColor: "#C9922A" }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (!routeShell) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="text-center">
@@ -105,6 +230,8 @@ export default function RouteDetailPage() {
     setJustCollectedId(id);
     setTimeout(() => setJustCollectedId(null), 1800);
   };
+  const routeImageKey = imageRouteId(routeShell.id);
+  const showPhuketMap = Boolean(generated && !loading && isItsayRouteId(routeShell.id));
 
   return (
     <div className="min-h-screen bg-page pb-24">
@@ -118,7 +245,7 @@ export default function RouteDetailPage() {
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <p className="font-serif text-base text-ink truncate">
-            {baseRoute.name}
+            {routeShell.name}
           </p>
         </div>
       </header>
@@ -134,15 +261,15 @@ export default function RouteDetailPage() {
           <div
             className="relative px-6 py-7 md:px-8 md:py-12 overflow-hidden min-h-[260px]"
             style={{
-              background: `linear-gradient(135deg, ${baseRoute.gradientFrom}, ${baseRoute.gradientTo})`,
+              background: `linear-gradient(135deg, ${routeShell.gradientFrom}, ${routeShell.gradientTo})`,
             }}
           >
             {/* Hero photograph */}
-            {ROUTE_HERO_IMAGES[baseRoute.id] && (
+            {ROUTE_HERO_IMAGES[routeImageKey] && (
               <div className="absolute inset-0">
                 <Image
-                  src={ROUTE_HERO_IMAGES[baseRoute.id]}
-                  alt={baseRoute.name}
+                  src={ROUTE_HERO_IMAGES[routeImageKey]}
+                  alt={routeShell.name}
                   fill
                   priority
                   sizes="(max-width: 1024px) 100vw, 1024px"
@@ -151,7 +278,7 @@ export default function RouteDetailPage() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: `linear-gradient(135deg, ${baseRoute.gradientFrom}AA, ${baseRoute.gradientTo}66 60%, transparent 100%)`,
+                    background: `linear-gradient(135deg, ${routeShell.gradientFrom}AA, ${routeShell.gradientTo}66 60%, transparent 100%)`,
                   }}
                 />
                 <div
@@ -168,11 +295,11 @@ export default function RouteDetailPage() {
               <span
                 className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
                 style={{
-                  background: `${baseRoute.accentColor}28`,
-                  color: baseRoute.accentColor,
+                  background: `${routeShell.accentColor}28`,
+                  color: routeShell.accentColor,
                 }}
               >
-                {baseRoute.badge}
+                {routeShell.badge}
               </span>
               {generated && (
                 <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-surface/15 text-surface">
@@ -181,17 +308,31 @@ export default function RouteDetailPage() {
               )}
             </div>
             <h1 className="relative font-serif text-3xl md:text-4xl text-surface leading-tight drop-shadow-md">
-              {baseRoute.name}
+              {routeShell.name}
             </h1>
+            <div className="relative flex items-center gap-1.5 mt-2">
+              <span
+                className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                style={{
+                  background: `${creatorMeta(routeShell.creator).color}D9`,
+                  color: "#FBF6EE",
+                }}
+              >
+                {creatorMeta(routeShell.creator).label}
+              </span>
+              <p className="text-surface/70 text-xs">
+                Created by {creatorMeta(routeShell.creator).name}
+              </p>
+            </div>
             <p className="relative text-surface/80 text-sm md:text-base mt-2 max-w-2xl">
-              {baseRoute.tagline}
+              {routeShell.tagline}
             </p>
             <div className="relative flex flex-wrap gap-x-4 gap-y-1 mt-4 text-surface/70 text-xs font-mono">
-              <span>{baseRoute.duration}</span>
+              <span>{routeShell.duration}</span>
               <span>·</span>
-              <span>{baseRoute.region}</span>
+              <span>{routeShell.region}</span>
               <span>·</span>
-              <span>{baseRoute.difficulty}</span>
+              <span>{routeShell.difficulty}</span>
             </div>
           </div>
 
@@ -217,7 +358,7 @@ export default function RouteDetailPage() {
         </motion.div>
 
         {/* Atmosphere image — sets the mood for the route */}
-        {ROUTE_DETAIL_IMAGES[baseRoute.id] && (
+        {ROUTE_DETAIL_IMAGES[routeImageKey] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -225,7 +366,7 @@ export default function RouteDetailPage() {
             className="relative h-48 md:h-64 rounded-2xl overflow-hidden border border-gold/15 mb-6 shadow-card"
           >
             <Image
-              src={ROUTE_DETAIL_IMAGES[baseRoute.id]}
+              src={ROUTE_DETAIL_IMAGES[routeImageKey]}
               alt=""
               fill
               sizes="(max-width: 1024px) 100vw, 1024px"
@@ -243,7 +384,7 @@ export default function RouteDetailPage() {
                   The mood
                 </p>
                 <p className="text-surface text-sm md:text-base font-serif italic mt-0.5 max-w-md">
-                  {baseRoute.tagline}
+                  {routeShell.tagline}
                 </p>
               </div>
             </div>
@@ -263,6 +404,10 @@ export default function RouteDetailPage() {
               Assembling itinerary from verified sources…
             </p>
           </div>
+        )}
+
+        {showPhuketMap && generated && (
+          <PhuketRouteMap stops={generated.stops} accentColor={routeShell.accentColor} />
         )}
 
         {/* Stops */}
@@ -289,7 +434,7 @@ export default function RouteDetailPage() {
                     <div
                       className="w-14 flex-shrink-0 flex flex-col items-center justify-start py-5 text-surface"
                       style={{
-                        background: `linear-gradient(180deg, ${baseRoute.gradientFrom}, ${baseRoute.gradientTo})`,
+                        background: `linear-gradient(180deg, ${routeShell.gradientFrom}, ${routeShell.gradientTo})`,
                       }}
                     >
                       <p className="text-[9px] uppercase tracking-widest opacity-60">Day</p>

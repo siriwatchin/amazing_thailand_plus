@@ -34,6 +34,11 @@ export interface GeneratedRoute {
   id: string;
   title: string;
   summary: string;
+  creator: {
+    type: "admin" | "guide" | "ai";
+    label: string;
+    name: string;
+  };
   durationDays: number;
   region: string;
   accentColor: string;

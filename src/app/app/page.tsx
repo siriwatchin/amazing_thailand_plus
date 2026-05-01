@@ -8,16 +8,31 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Home, Map, Bot, Stamp, ShieldAlert, LogOut, Bell,
   ChevronRight, MapPin, Phone, TrendingDown,
-  Check, Lock, Send,
+  Check, Lock, Send, Loader2, ShieldCheck, Sparkles,
 } from "lucide-react";
-import { routes } from "@/data/routes";
+import { routes, type Route } from "@/data/routes";
 import { passportStamps, passportMeta } from "@/data/passport";
 import { getProvider } from "@/lib/ai/provider";
-import type { GuideAnswer } from "@/lib/ai/types";
+import type { GeneratedRoute, GuideAnswer } from "@/lib/ai/types";
 import { useLocalStorage } from "@/lib/useLocalStorage";
 import { ROUTE_HERO_IMAGES } from "@/data/images";
 
 const PASSPORT_STORAGE_KEY = "atp_collected_stamps";
+const GENERATED_ROUTES_STORAGE_KEY = "atp_generated_routes";
+
+const creatorColor: Record<Route["creator"]["type"], string> = {
+  admin: "#2D5A3D",
+  guide: "#C9922A",
+  ai: "#1A8A7A",
+};
+
+function creatorMeta(
+  creator?: { type: "admin" | "guide" | "ai"; label: string; name: string },
+) {
+  const fallback = { type: "ai" as const, label: "AI Gen", name: "ATP Route Builder" };
+  const c = creator ?? fallback;
+  return { ...c, color: creatorColor[c.type] };
+}
 
 // ── Progress ring ────────────────────────────────────────────────────────────
 function ProgressRing({ pct, color, size = 84 }: { pct: number; color: string; size?: number }) {
@@ -56,6 +71,15 @@ const QUICK_QS = [
   "Authentic street food in Bangkok",
 ];
 
+const DEFAULT_ROUTE_PROMPT =
+  "ตามรอยแปลรักฉันด้วยใจเธอ I Told Sunset About You ที่ภูเก็ต 3 วัน";
+
+const ROUTE_AI_EXAMPLES = [
+  DEFAULT_ROUTE_PROMPT,
+  "ตามรอย I Told Sunset About You แบบ 1 วัน เน้น Old Town และ Cape Panwa",
+  "Create a romantic Phuket series trail for ITSAY with fair-price and safety notes",
+];
+
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function AppPage() {
   const router  = useRouter();
@@ -69,10 +93,19 @@ export default function AppPage() {
   const [guideTyping, setGuideTyping] = useState(false);
   const [guideAnswer, setGuideAnswer] = useState<GuideAnswer | null>(null);
 
+  // AI route creation state
+  const [routePrompt, setRoutePrompt] = useState(DEFAULT_ROUTE_PROMPT);
+  const [routeGenerating, setRouteGenerating] = useState(false);
+  const [generatedRoute, setGeneratedRoute] = useState<GeneratedRoute | null>(null);
+
   // Passport interactive state — persisted across reloads
   const [collectedIds, setCollectedIds] = useLocalStorage<string[]>(
     PASSPORT_STORAGE_KEY,
     passportStamps.filter((s) => s.collected).map((s) => s.id),
+  );
+  const [savedGeneratedRoutes, setSavedGeneratedRoutes] = useLocalStorage<GeneratedRoute[]>(
+    GENERATED_ROUTES_STORAGE_KEY,
+    [],
   );
   const collectedSet = new Set(collectedIds);
 
@@ -109,6 +142,27 @@ export default function AppPage() {
     askGuide(q);
   };
 
+  const generateStoryRoute = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const prompt = routePrompt.trim();
+    if (routeGenerating || !prompt) return;
+    setGeneratedRoute(null);
+    setRouteGenerating(true);
+    try {
+      const result = await getProvider().generateRoute({
+        prompt,
+        durationDays: prompt.includes("1 วัน") ? 1 : 3,
+      });
+      setGeneratedRoute(result);
+      setSavedGeneratedRoutes((prev) => [
+        result,
+        ...prev.filter((r) => r.id !== result.id),
+      ].slice(0, 5));
+    } finally {
+      setRouteGenerating(false);
+    }
+  };
+
   const collectStamp = (id: string) => {
     if (collectedSet.has(id)) return;
     setCollectedIds([...collectedIds, id]);
@@ -117,7 +171,7 @@ export default function AppPage() {
   if (!mounted) return null;
 
   const passportPct = (collectedSet.size / passportMeta.totalStamps) * 100;
-  const activeRoute = routes[1]; // King Naresuan
+  const activeRoute = routes.find((r) => r.id === "king-naresuan") ?? routes[0];
 
   return (
     <div className="min-h-screen bg-page flex flex-col">
@@ -242,6 +296,20 @@ export default function AppPage() {
                       <h2 className="font-serif text-lg text-surface mt-2 leading-snug drop-shadow-md">
                         {activeRoute.name}
                       </h2>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span
+                          className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{
+                            background: `${creatorMeta(activeRoute.creator).color}D9`,
+                            color: "#FBF6EE",
+                          }}
+                        >
+                          {activeRoute.creator.label}
+                        </span>
+                        <p className="text-surface/65 text-[10px]">
+                          Created by {activeRoute.creator.name}
+                        </p>
+                      </div>
                       <p className="text-surface/70 text-xs mt-0.5 font-mono">
                         {activeRoute.duration} · {activeRoute.region}
                       </p>
@@ -536,6 +604,20 @@ export default function AppPage() {
                         </div>
                         <div className="bg-surface p-3.5">
                           <p className="font-semibold text-ink text-sm leading-snug">{route.name}</p>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span
+                              className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{
+                                color: creatorMeta(route.creator).color,
+                                background: `${creatorMeta(route.creator).color}18`,
+                              }}
+                            >
+                              {route.creator.label}
+                            </span>
+                            <p className="text-[10px] text-ink/35 truncate">
+                              {route.creator.name}
+                            </p>
+                          </div>
                           <p className="text-[11px] text-ink/45 mt-0.5">{route.duration} · {route.region}</p>
                           <div className="flex items-center justify-between mt-2.5">
                             <span className="text-[10px] text-ink/35 border border-ink/10 px-2 py-0.5 rounded-full">
@@ -559,6 +641,172 @@ export default function AppPage() {
                 <h1 className="font-serif text-2xl text-ink">Story Routes</h1>
                 <p className="text-ink/45 text-sm mt-1">Government-verified · Expert-curated · 340+ routes</p>
               </div>
+
+              <div className="rounded-2xl border border-gold/15 bg-surface shadow-card p-5 mb-6">
+                <div className="grid md:grid-cols-5 gap-5 items-start">
+                  <div className="md:col-span-2">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl bg-gold/12 flex items-center justify-center">
+                        <Sparkles className="w-4 h-4 text-gold" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-ink text-sm">Create Route with AI</p>
+                        <p className="text-[11px] text-ink/40">Try the Phuket series trail prompt</p>
+                      </div>
+                    </div>
+                    <form onSubmit={generateStoryRoute} className="flex flex-col gap-3">
+                      <textarea
+                        value={routePrompt}
+                        onChange={(e) => setRoutePrompt(e.target.value)}
+                        rows={4}
+                        className="w-full bg-page border border-gold/22 rounded-xl px-3.5 py-3 text-sm text-ink placeholder:text-ink/30 focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/12 resize-none"
+                        placeholder="Tell AI what kind of route to create..."
+                      />
+                      <div className="flex flex-wrap gap-1.5">
+                        {ROUTE_AI_EXAMPLES.map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setRoutePrompt(p)}
+                            className="text-[10px] text-ink/45 hover:text-ink border border-ink/10 hover:border-gold/40 px-2 py-0.5 rounded-full transition-colors"
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={routeGenerating || !routePrompt.trim()}
+                        className="inline-flex items-center justify-center gap-2 bg-earth text-surface text-sm font-bold px-4 py-2.5 rounded-xl hover:bg-earth-light transition-colors disabled:opacity-50"
+                      >
+                        {routeGenerating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Creating route...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4" />
+                            Generate Route
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+
+                  <div className="md:col-span-3">
+                    {routeGenerating && (
+                      <div className="min-h-[260px] rounded-2xl border border-gold/15 bg-page flex flex-col items-center justify-center gap-3">
+                        <Loader2 className="w-7 h-7 text-gold animate-spin" />
+                        <p className="text-sm text-ink/45">Assembling Phuket filming locations...</p>
+                      </div>
+                    )}
+
+                    {generatedRoute && !routeGenerating && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-2xl border border-gold/15 bg-page overflow-hidden"
+                      >
+                        <div
+                          className="px-5 py-4"
+                          style={{ background: `linear-gradient(135deg, ${generatedRoute.gradientFrom}, ${generatedRoute.gradientTo})` }}
+                        >
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            {generatedRoute.badges.map((b) => (
+                              <span
+                                key={b.label}
+                                className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-surface/15 text-surface inline-flex items-center gap-1"
+                              >
+                                <ShieldCheck className="w-3 h-3" /> {b.label}
+                              </span>
+                            ))}
+                            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-surface/15 text-surface">
+                              Trust {generatedRoute.trustScore}%
+                            </span>
+                          </div>
+                          <h2 className="font-serif text-xl text-surface leading-snug">
+                            {generatedRoute.title}
+                          </h2>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <span
+                              className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{
+                                background: `${creatorMeta(generatedRoute.creator).color}D9`,
+                                color: "#FBF6EE",
+                              }}
+                            >
+                              {creatorMeta(generatedRoute.creator).label}
+                            </span>
+                            <p className="text-surface/65 text-[10px]">
+                              Created by {creatorMeta(generatedRoute.creator).name}
+                            </p>
+                          </div>
+                          <p className="text-surface/65 text-xs mt-1">
+                            {generatedRoute.durationDays} days · {generatedRoute.region}
+                          </p>
+                        </div>
+                        <div className="p-4">
+                          <p className="text-sm text-ink/65 leading-relaxed mb-3">
+                            {generatedRoute.summary}
+                          </p>
+                          <div className="grid sm:grid-cols-2 gap-2 mb-4">
+                            {generatedRoute.stops.slice(0, 4).map((stop, i) => (
+                              <div key={stop.id} className="rounded-xl border border-gold/15 bg-surface px-3 py-2">
+                                <p className="text-[10px] text-ink/35 uppercase tracking-widest">Stop {i + 1} · Day {stop.day}</p>
+                                <p className="text-sm font-semibold text-ink mt-0.5">{stop.name}</p>
+                                <p className="text-[11px] text-ink/45">{stop.region}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <Link
+                            href={`/app/route/${generatedRoute.id}`}
+                            className="inline-flex items-center gap-1.5 bg-earth text-surface text-xs font-bold px-4 py-2 rounded-full hover:bg-earth-light transition-colors"
+                          >
+                            Open generated route <ChevronRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {!generatedRoute && !routeGenerating && savedGeneratedRoutes.length > 0 && (
+                      <div className="rounded-2xl border border-gold/15 bg-page p-4">
+                        <p className="text-[10px] text-ink/40 uppercase tracking-widest mb-3">Recent AI routes</p>
+                        <div className="space-y-2">
+                          {savedGeneratedRoutes.slice(0, 3).map((route) => (
+                            <Link
+                              key={route.id}
+                              href={`/app/route/${route.id}`}
+                              className="flex items-center justify-between gap-3 rounded-xl border border-gold/15 bg-surface px-3 py-2 hover:border-gold/40 transition-colors"
+                            >
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-ink truncate">{route.title}</p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <span
+                                    className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                                    style={{
+                                      color: creatorMeta(route.creator).color,
+                                      background: `${creatorMeta(route.creator).color}18`,
+                                    }}
+                                  >
+                                    {creatorMeta(route.creator).label}
+                                  </span>
+                                  <p className="text-[10px] text-ink/35 truncate">
+                                    {creatorMeta(route.creator).name}
+                                  </p>
+                                </div>
+                                <p className="text-[11px] text-ink/40 truncate">{route.durationDays} days · {route.region}</p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 text-gold flex-shrink-0" />
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {routes.map((route) => (
                   <div key={route.id} className="rounded-2xl overflow-hidden border border-gold/15 shadow-card bg-surface group">
@@ -592,6 +840,20 @@ export default function AppPage() {
                       <h3 className="relative font-serif text-surface text-base font-semibold leading-snug drop-shadow-md">{route.name}</h3>
                     </div>
                     <div className="p-4">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <span
+                          className="text-[9px] font-semibold px-2 py-0.5 rounded-full"
+                          style={{
+                            color: creatorMeta(route.creator).color,
+                            background: `${creatorMeta(route.creator).color}18`,
+                          }}
+                        >
+                          {route.creator.label}
+                        </span>
+                        <p className="text-[10px] text-ink/35 truncate">
+                          Created by {route.creator.name}
+                        </p>
+                      </div>
                       <p className="text-xs text-ink/50 mb-3 leading-relaxed">{route.tagline}</p>
                       <div className="flex flex-wrap gap-1.5 mb-4">
                         {route.highlights.map((h) => (

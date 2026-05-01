@@ -19,6 +19,12 @@ const EXAMPLE_PROMPTS = [
   "Beaches and islands in the south",
 ];
 
+const creatorColor: Record<GeneratedRoute["creator"]["type"], string> = {
+  admin: "#2D5A3D",
+  guide: "#C9922A",
+  ai: "#1A8A7A",
+};
+
 export default function AIRouteBuilder() {
   const [prompt, setPrompt] = useState("");
   const [selected, setSelected] = useState<string[]>(["Film & Series"]);
@@ -258,6 +264,20 @@ export default function AIRouteBuilder() {
                     <h3 className="font-serif text-xl text-ink leading-snug">
                       {route.title}
                     </h3>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{
+                          color: creatorColor[route.creator.type],
+                          background: `${creatorColor[route.creator.type]}18`,
+                        }}
+                      >
+                        {route.creator.label}
+                      </span>
+                      <p className="text-[11px] text-ink/40">
+                        Created by {route.creator.name}
+                      </p>
+                    </div>
                     <p className="text-ink/55 text-xs mt-1">
                       {route.durationDays} days · {route.region}
                     </p>

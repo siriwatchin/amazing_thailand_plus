@@ -52,6 +52,20 @@ function pickCitation(tierId: TrustTierId, seed: number): Citation {
   };
 }
 
+function makeCitation(
+  tierId: TrustTierId,
+  source: string,
+  trustLabel: string,
+): Citation {
+  const tier = tierMeta(tierId);
+  return {
+    source,
+    tier: tierId,
+    trustLabel,
+    trustColor: tier.accentColor,
+  };
+}
+
 // ── Tiny seeded shuffle so output varies per call but is deterministic ────────
 
 function hashString(s: string): number {
@@ -82,7 +96,7 @@ type Theme =
   | "adventure";
 
 const THEME_KEYWORDS: Record<Theme, string[]> = {
-  drama:    ["phiang", "series", "drama", "film", "movie", "soap", "k-drama", "show"],
+  drama:    ["phiang", "series", "drama", "film", "movie", "soap", "k-drama", "show", "i told sunset", "itsay", "แปลรัก", "bkpp", "เต๋", "โอ้เอ๋ว"],
   history:  ["history", "naresuan", "ayutthaya", "sukhothai", "ancient", "kingdom", "ruin", "war", "battle"],
   nature:   ["nature", "park", "mountain", "jungle", "forest", "wildlife", "elephant", "khao yai", "doi", "trek"],
   beach:    ["beach", "phuket", "samui", "krabi", "phi phi", "island", "sea", "snorkel", "dive"],
@@ -121,6 +135,101 @@ interface StopTemplate {
   safetyNote?: string;
   stampId?: string;
 }
+
+const ITSAY_SOURCE = "SEA Bridge · I Told Sunset About You filming locations · 2025";
+
+function isItsayPrompt(prompt: string): boolean {
+  return /i told sunset|sunset about you|itsay|แปลรัก|เต๋|โอ้เอ๋ว|bkpp/i.test(prompt);
+}
+
+const ITSAY_STOPS: StopTemplate[] = [
+  {
+    name: "Soi Romanee",
+    region: "Phuket Old Town",
+    themes: ["drama", "culture"],
+    story: "A pastel Sino-Portuguese lane used as one of the most recognizable Tae and Oh-aew photo spots. Start early before the cafe crowd arrives.",
+    fairPriceTHB: 0,
+    stampId: "phuket-old",
+  },
+  {
+    name: "Thalang Road",
+    region: "Phuket Old Town",
+    themes: ["drama", "culture", "food"],
+    story: "The old town spine where the series turns everyday Phuket streets into a memory map of school days, family shops, and first feelings.",
+    fairPriceTHB: 0,
+  },
+  {
+    name: "Kopitiam by Wilai",
+    region: "Phuket Old Town",
+    themes: ["drama", "food", "culture"],
+    story: "A classic Phuket tea-and-coffee stop that mirrors the warm, lived-in local texture around Oh-aew's world.",
+    fairPriceTHB: 180,
+    touristPriceTHB: 320,
+  },
+  {
+    name: "Saeng Tham Shrine",
+    region: "Phuket Old Town",
+    themes: ["drama", "culture"],
+    story: "A Chinese shrine tucked into old town, useful for grounding the route in Phuket's Peranakan-Chinese heritage before the story moves toward the sea.",
+    fairPriceTHB: 0,
+    safetyNote: "Dress modestly and keep voices low inside active shrine areas.",
+  },
+  {
+    name: "On On Hotel & Phuket Thai Hua Museum",
+    region: "Phuket Old Town",
+    themes: ["drama", "culture"],
+    story: "Two heritage anchors for the route: a historic hotel seen across many Phuket screen stories and a former school building that explains the island's Chinese-Thai roots.",
+    fairPriceTHB: 200,
+  },
+  {
+    name: "Satree Phuket School",
+    region: "Phuket Town",
+    themes: ["drama"],
+    story: "The school-world stop for Tae and Oh-aew's coming-of-age arc. Treat it as an exterior-only checkpoint unless there is an official public event.",
+    fairPriceTHB: 0,
+    safetyNote: "Respect school privacy: no filming students and no entering restricted areas.",
+  },
+  {
+    name: "Saphan Hin & Kio Thian Keng Shrine",
+    region: "Phuket Town",
+    themes: ["drama", "culture"],
+    story: "A waterfront reset point and ritual landscape that gives the route a quieter emotional beat after the old town scenes.",
+    fairPriceTHB: 0,
+    safetyNote: "Use the main lit paths after sunset and keep bags close in crowded festival periods.",
+  },
+  {
+    name: "Karon Beach",
+    region: "Karon",
+    themes: ["drama", "beach"],
+    story: "A spacious beach stop for the friend-group and feeling-out-the-future scenes, best timed for late afternoon light.",
+    fairPriceTHB: 0,
+    safetyNote: "Check the beach flag before swimming; red flags mean no swimming.",
+  },
+  {
+    name: "Kantary Cafe · Cape Panwa",
+    region: "Cape Panwa",
+    themes: ["drama", "food", "beach"],
+    story: "A key meeting and conversation location for the deeper Cape Panwa chapter of Tae and Oh-aew's memories.",
+    fairPriceTHB: 220,
+    touristPriceTHB: 420,
+  },
+  {
+    name: "Panwa House & Cape Panwa Hotel",
+    region: "Cape Panwa",
+    themes: ["drama", "culture", "beach"],
+    story: "The emotional centre of the Panwa sequence, pairing an old-world seaside house with the hotel setting used for several major scenes.",
+    fairPriceTHB: 0,
+    safetyNote: "Some areas are hotel/private property; use public access points or book with the venue before entering.",
+  },
+  {
+    name: "Promthep Cape",
+    region: "Rawai",
+    themes: ["drama", "beach"],
+    story: "A sunset finale for the route, echoing the series' central mood: bright, painful, tender, and unmistakably Phuket.",
+    fairPriceTHB: 0,
+    safetyNote: "Sunset is crowded; stay behind barriers and allow extra time for traffic leaving the viewpoint.",
+  },
+];
 
 const STOP_LIBRARY: StopTemplate[] = [
   {
@@ -289,9 +398,61 @@ function selectStops(themes: Theme[], days: number, prompt: string): StopTemplat
   return ordered.slice(0, stopCount);
 }
 
+function buildItsayRoute(req: RouteRequest): GeneratedRoute {
+  const days = detectDuration(req.prompt, req.durationDays ?? 3);
+  const seed = hashString(req.prompt + days);
+  const stopCount = days <= 1 ? 5 : days === 2 ? 8 : 11;
+  const stops = ITSAY_STOPS.slice(0, stopCount);
+  const sourceCitation = makeCitation("community", ITSAY_SOURCE, "Series Location Guide");
+
+  const generatedStops: GeneratedStop[] = stops.map((s, i) => {
+    const day = Math.min(days, Math.floor(i / Math.ceil(stops.length / days)) + 1);
+    const supportTier: TrustTierId = i % 3 === 0 ? "expert" : i % 3 === 1 ? "community" : "government";
+    return {
+      id: `itsay-${i}-${s.name.replace(/\W+/g, "-").toLowerCase()}`,
+      day,
+      name: s.name,
+      region: s.region,
+      story: s.story,
+      fairPriceTHB: s.fairPriceTHB,
+      touristPriceTHB: s.touristPriceTHB,
+      safetyNote: s.safetyNote,
+      stampId: s.stampId,
+      citations: [sourceCitation, pickCitation(supportTier, seed + i)],
+    };
+  });
+
+  return {
+    id: `route-itsay-phuket-${days}`,
+    title: "I Told Sunset About You · Phuket Series Trail",
+    summary: `A ${days}-day route following Tae and Oh-aew through Phuket Old Town, school-life landmarks, Karon Beach, Cape Panwa, and the Promthep Cape sunset.`,
+    creator: {
+      type: "ai",
+      label: "AI Gen",
+      name: "ATP Route Builder",
+    },
+    durationDays: days,
+    region: "Phuket Old Town · Phuket Town · Karon · Cape Panwa",
+    accentColor: "#D6447A",
+    gradientFrom: "#8C2C50",
+    gradientTo: "#1A2E16",
+    trustScore: 98,
+    stops: generatedStops,
+    badges: [
+      { label: "Series Location Guide", color: "#D6447A" },
+      { label: "Community Verified", color: "#C4652A" },
+      { label: "AI · Cited", color: "#1A8A7A" },
+    ],
+  };
+}
+
 // ── generateRoute ─────────────────────────────────────────────────────────────
 
 function buildRoute(req: RouteRequest): GeneratedRoute {
+  if (isItsayPrompt(req.prompt)) {
+    return buildItsayRoute(req);
+  }
+
   const themes = detectThemes(req.prompt);
   const days   = detectDuration(req.prompt, req.durationDays);
   const stops  = selectStops(themes, days, req.prompt);
@@ -339,6 +500,11 @@ function buildRoute(req: RouteRequest): GeneratedRoute {
     id: `route-${seed}`,
     title,
     summary: `A ${days}-day ${primaryTheme} journey across ${regions.slice(0, 3).join(" → ")}, hand-assembled from verified sources at every stop.`,
+    creator: {
+      type: "ai",
+      label: "AI Gen",
+      name: "ATP Route Builder",
+    },
     durationDays: days,
     region: regions.slice(0, 3).join(" · "),
     accentColor: palette.accent,

@@ -37,6 +37,7 @@ export const IMAGES = {
 // Per-route hero images (matched by Route.id).
 export const ROUTE_HERO_IMAGES: Record<string, string> = {
   "phiang-ther":            IMAGES.story.seriesFilmLocation,
+  "i-told-sunset-about-you": IMAGES.story.seriesFilmLocation,
   "king-naresuan":          IMAGES.hero.ayutthayaGoldenHour,
   "national-park-passport": IMAGES.nature.khaoYaiElephants,
 };
@@ -44,6 +45,7 @@ export const ROUTE_HERO_IMAGES: Record<string, string> = {
 // Per-route secondary / detail-page background image.
 export const ROUTE_DETAIL_IMAGES: Record<string, string> = {
   "phiang-ther":            IMAGES.story.samyanNight,
+  "i-told-sunset-about-you": IMAGES.story.seriesFilmLocation,
   "king-naresuan":          IMAGES.hero.bangkokSkylineBlueHour,
   "national-park-passport": IMAGES.nature.erawanFalls,
 };

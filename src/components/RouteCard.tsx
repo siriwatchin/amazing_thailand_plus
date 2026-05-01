@@ -24,6 +24,12 @@ const difficultyBg: Record<string, string> = {
   Hard:     "rgba(196,101,42,0.12)",
 };
 
+const creatorColor: Record<Route["creator"]["type"], string> = {
+  admin: "#2D5A3D",
+  guide: "#C9922A",
+  ai: "#1A8A7A",
+};
+
 export default function RouteCard({ route, index }: RouteCardProps) {
   return (
     <motion.div
@@ -104,6 +110,18 @@ export default function RouteCard({ route, index }: RouteCardProps) {
         <h3 className="font-serif text-xl text-ink mb-2 group-hover:text-gradient-gold transition-all leading-snug">
           {route.name}
         </h3>
+        <div className="mb-3 inline-flex items-center gap-1.5 text-[11px] text-ink/45">
+          <span
+            className="font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              color: creatorColor[route.creator.type],
+              background: `${creatorColor[route.creator.type]}18`,
+            }}
+          >
+            {route.creator.label}
+          </span>
+          <span className="truncate">Created by {route.creator.name}</span>
+        </div>
         <p className="text-ink/50 text-sm italic mb-5 leading-relaxed">{route.tagline}</p>
 
         {/* Meta */}
