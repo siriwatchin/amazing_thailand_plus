@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #F5EDD6;
+    color: #1A2E16;
+  }
+
+  ::selection {
+    background-color: #C9922A;
+    color: #FBF6EE;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track  { background: #EDD9B0; }
+  ::-webkit-scrollbar-thumb  { background: #C9922A; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #A8731A; }
+}
+
+@layer utilities {
+  /* Antique gold → warm terracotta gradient text */
+  .text-gradient-gold {
+    background: linear-gradient(90deg, #C9922A, #C4742A);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Jungle green gradient text */
+  .text-gradient-jungle {
+    background: linear-gradient(135deg, #2D5A3D, #4A8C5C);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Light glass panel — frosted parchment */
+  .glass-panel {
+    backdrop-filter: blur(12px);
+    background: rgba(251, 246, 238, 0.88);
+    border: 1px solid rgba(201, 146, 42, 0.28);
+  }
+
+  .glass-panel-light {
+    backdrop-filter: blur(8px);
+    background: rgba(245, 237, 214, 0.75);
+    border: 1px solid rgba(201, 146, 42, 0.18);
+  }
+
+  /* Gold border utility */
+  .border-gold-soft {
+    border: 1px solid rgba(201, 146, 42, 0.22);
+  }
+
+  /* Parchment card base */
+  .card-base {
+    background: #FBF6EE;
+    border: 1px solid rgba(139, 74, 42, 0.12);
+    box-shadow: 0 2px 16px rgba(26, 46, 22, 0.07);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #C9922A 0%, #C4742A 50%, #C9922A 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s linear infinite;
+  }
+}

@@ -1,0 +1,53 @@
+// Example skeleton — NOT compiled. Rename to claudeProvider.ts and wire in
+// provider.ts when ready to switch to a real Claude backend.
+//
+// Recommended shape:
+//   - Keep API keys server-side only. Components call internal Next.js API
+//     routes (/api/ai/route, /api/ai/guide), which in turn call Anthropic.
+//   - The route handlers do retrieval (RAG over your curated KB), then call
+//     Claude with `tools` for citation extraction, and validate the response
+//     against the GeneratedRoute / GuideAnswer types before returning.
+
+/*
+import type { AIProvider } from "./types";
+
+export const claudeProvider: AIProvider = {
+  async generateRoute(req) {
+    const res = await fetch("/api/ai/route", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req),
+    });
+    if (!res.ok) throw new Error(`generateRoute failed: ${res.status}`);
+    return res.json();
+  },
+
+  async askGuide(question) {
+    const res = await fetch("/api/ai/guide", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+    if (!res.ok) throw new Error(`askGuide failed: ${res.status}`);
+    return res.json();
+  },
+};
+
+// Server-side route handler sketch (src/app/api/ai/guide/route.ts):
+//
+// import Anthropic from "@anthropic-ai/sdk";
+// import { NextResponse } from "next/server";
+//
+// const client = new Anthropic();
+//
+// export async function POST(req: Request) {
+//   const { question } = await req.json();
+//   // 1. retrieve candidate citations from KB (pgvector / jina-v3 embeddings)
+//   // 2. call Claude with retrieval-only system prompt + tool to emit
+//   //    a strictly typed GuideAnswer (use response_format / tools).
+//   // 3. validate, return JSON.
+//   return NextResponse.json(...);
+// }
+*/
+
+export {};
