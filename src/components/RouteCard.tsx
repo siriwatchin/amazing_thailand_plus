@@ -1,9 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { DynamicIcon } from "@/components/DynamicIcon";
 import type { Route } from "@/data/routes";
+import { ROUTE_HERO_IMAGES } from "@/data/images";
 
 interface RouteCardProps {
   route: Route;
@@ -42,6 +44,55 @@ export default function RouteCard({ route, index }: RouteCardProps) {
         className="absolute inset-0 z-10"
         aria-label={`Open ${route.name}`}
       />
+
+      {/* Hero image */}
+      {ROUTE_HERO_IMAGES[route.id] && (
+        <div className="relative h-44 w-full overflow-hidden flex-shrink-0">
+          <Image
+            src={ROUTE_HERO_IMAGES[route.id]}
+            alt={route.name}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            priority={index === 0}
+          />
+          {/* Gradient overlay for text legibility above */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: `linear-gradient(180deg, rgba(26,46,22,0.05) 0%, rgba(26,46,22,0.18) 60%, rgba(251,246,238,0.95) 100%)`,
+            }}
+          />
+          {/* Top-right badge floating over image */}
+          <span
+            className="absolute top-3 right-3 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-md border shadow-card"
+            style={{
+              color: "#FBF6EE",
+              borderColor: `${route.badgeColor}66`,
+              background: `${route.badgeColor}D9`,
+            }}
+          >
+            {route.badge}
+          </span>
+          {/* Region pill bottom-left */}
+          <div className="absolute bottom-3 left-3 flex items-center gap-2">
+            <div
+              className="p-1.5 rounded-lg backdrop-blur-md"
+              style={{ background: `${route.accentColor}E0` }}
+            >
+              <DynamicIcon
+                name={route.icon}
+                className="w-3.5 h-3.5"
+                style={{ color: "#FBF6EE" }}
+              />
+            </div>
+            <span className="text-xs font-semibold text-surface drop-shadow-md tracking-wide">
+              {route.region}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Gradient accent bar */}
       <div
         className="h-1.5 w-full flex-shrink-0"
@@ -49,35 +100,6 @@ export default function RouteCard({ route, index }: RouteCardProps) {
       />
 
       <div className="p-6 flex flex-col flex-1">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div
-              className="p-2 rounded-xl"
-              style={{ background: `${route.accentColor}18` }}
-            >
-              <DynamicIcon
-                name={route.icon}
-                className="w-4 h-4"
-                style={{ color: route.accentColor }}
-              />
-            </div>
-            <span className="text-xs font-medium text-ink/40 uppercase tracking-widest">
-              {route.region}
-            </span>
-          </div>
-          <span
-            className="text-xs font-semibold px-3 py-1 rounded-full border flex-shrink-0"
-            style={{
-              color:        route.badgeColor,
-              borderColor:  `${route.badgeColor}35`,
-              background:   `${route.badgeColor}10`,
-            }}
-          >
-            {route.badge}
-          </span>
-        </div>
-
         {/* Title */}
         <h3 className="font-serif text-xl text-ink mb-2 group-hover:text-gradient-gold transition-all leading-snug">
           {route.name}

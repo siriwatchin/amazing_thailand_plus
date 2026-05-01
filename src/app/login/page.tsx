@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
-import TempleSceneSVG from "@/components/TempleSceneSVG";
+import { IMAGES } from "@/data/images";
 
 const TRUST_BADGES = ["TAT Certified", "DNP Verified", "Tourist Police Partner"];
 
@@ -41,17 +42,28 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center relative overflow-hidden px-4 py-12"
       style={{ background: "linear-gradient(180deg, #EDD9B0 0%, #F5EDD6 60%, #F5EDD6 100%)" }}
     >
-      {/* Temple silhouette bg */}
-      <TempleSceneSVG className="opacity-50" />
-
-      {/* Gold glow */}
-      <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full opacity-35 blur-3xl pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, #C9922A 0%, transparent 70%)" }}
+      {/* Photographic backdrop — Bangkok rooftop temple at blue hour */}
+      <Image
+        src={IMAGES.hero.bangkokSkylineBlueHour}
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
       />
+      {/* Light parchment veil — keeps form legible without hiding the photo */}
       <div
-        className="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full opacity-20 blur-3xl pointer-events-none"
-        style={{ background: "radial-gradient(ellipse, #B5511F 0%, transparent 70%)" }}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(245,237,214,0.30) 0%, rgba(245,237,214,0.10) 35%, rgba(245,237,214,0.30) 75%, rgba(245,237,214,0.55) 100%)",
+        }}
+      />
+
+      {/* Gold glow accent — additive */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] rounded-full opacity-25 blur-3xl pointer-events-none mix-blend-screen"
+        style={{ background: "radial-gradient(ellipse, #C9922A 0%, transparent 70%)" }}
       />
 
       <motion.div

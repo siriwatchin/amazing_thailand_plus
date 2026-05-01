@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { ROUTE_HERO_IMAGES, ROUTE_DETAIL_IMAGES } from "@/data/images";
 import {
   ArrowLeft,
   Play,
@@ -130,12 +132,39 @@ export default function RouteDetailPage() {
           className="rounded-3xl overflow-hidden border border-gold/20 shadow-card mb-6"
         >
           <div
-            className="px-6 py-7 md:px-8 md:py-9 relative"
+            className="relative px-6 py-7 md:px-8 md:py-12 overflow-hidden min-h-[260px]"
             style={{
               background: `linear-gradient(135deg, ${baseRoute.gradientFrom}, ${baseRoute.gradientTo})`,
             }}
           >
-            <div className="flex flex-wrap items-center gap-2 mb-3">
+            {/* Hero photograph */}
+            {ROUTE_HERO_IMAGES[baseRoute.id] && (
+              <div className="absolute inset-0">
+                <Image
+                  src={ROUTE_HERO_IMAGES[baseRoute.id]}
+                  alt={baseRoute.name}
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 1024px"
+                  className="object-cover opacity-65"
+                />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${baseRoute.gradientFrom}AA, ${baseRoute.gradientTo}66 60%, transparent 100%)`,
+                  }}
+                />
+                <div
+                  className="absolute inset-x-0 bottom-0 h-24"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, transparent 0%, rgba(15,26,13,0.55) 100%)",
+                  }}
+                />
+              </div>
+            )}
+
+            <div className="relative flex flex-wrap items-center gap-2 mb-3">
               <span
                 className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
                 style={{
@@ -151,13 +180,13 @@ export default function RouteDetailPage() {
                 </span>
               )}
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl text-surface leading-tight">
+            <h1 className="relative font-serif text-3xl md:text-4xl text-surface leading-tight drop-shadow-md">
               {baseRoute.name}
             </h1>
-            <p className="text-surface/70 text-sm md:text-base mt-2 max-w-2xl">
+            <p className="relative text-surface/80 text-sm md:text-base mt-2 max-w-2xl">
               {baseRoute.tagline}
             </p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-surface/60 text-xs font-mono">
+            <div className="relative flex flex-wrap gap-x-4 gap-y-1 mt-4 text-surface/70 text-xs font-mono">
               <span>{baseRoute.duration}</span>
               <span>·</span>
               <span>{baseRoute.region}</span>
@@ -186,6 +215,40 @@ export default function RouteDetailPage() {
             </div>
           </div>
         </motion.div>
+
+        {/* Atmosphere image — sets the mood for the route */}
+        {ROUTE_DETAIL_IMAGES[baseRoute.id] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.15, duration: 0.7 }}
+            className="relative h-48 md:h-64 rounded-2xl overflow-hidden border border-gold/15 mb-6 shadow-card"
+          >
+            <Image
+              src={ROUTE_DETAIL_IMAGES[baseRoute.id]}
+              alt=""
+              fill
+              sizes="(max-width: 1024px) 100vw, 1024px"
+              className="object-cover"
+            />
+            <div
+              className="absolute inset-0 flex items-end p-5 md:p-7"
+              style={{
+                background:
+                  "linear-gradient(180deg, rgba(15,26,13,0.0) 30%, rgba(15,26,13,0.65) 100%)",
+              }}
+            >
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-surface/70 font-mono">
+                  The mood
+                </p>
+                <p className="text-surface text-sm md:text-base font-serif italic mt-0.5 max-w-md">
+                  {baseRoute.tagline}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Loading */}
         {loading && (

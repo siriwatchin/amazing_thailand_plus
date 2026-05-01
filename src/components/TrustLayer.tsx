@@ -1,5 +1,7 @@
+import Image from "next/image";
 import { trustTiers } from "@/data/trust";
 import TrustCard from "./TrustCard";
+import { IMAGES } from "@/data/images";
 
 export default function TrustLayer() {
   return (
@@ -48,6 +50,43 @@ export default function TrustLayer() {
         <p className="text-center text-ink/30 text-xs mt-10 max-w-lg mx-auto">
           No information is published without passing through all four trust layers. AI only assembles — humans verify.
         </p>
+
+        {/* Editorial moment — humans behind the trust */}
+        <div className="mt-14 grid md:grid-cols-2 gap-6 items-center max-w-5xl mx-auto">
+          <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden border border-gold/20 shadow-card">
+            <Image
+              src={IMAGES.trust.monkTraveler}
+              alt="A monk and a traveler share a quiet moment of blessing inside a Thai temple"
+              fill
+              sizes="(max-width: 768px) 100vw, 480px"
+              className="object-cover"
+            />
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(180deg, transparent 50%, rgba(15,26,13,0.45) 100%)",
+              }}
+            />
+            <span className="absolute bottom-3 left-3 text-[10px] text-surface/85 font-mono tracking-widest uppercase">
+              Tier 2 · Expert &amp; Cultural
+            </span>
+          </div>
+          <div>
+            <span className="text-jade font-mono text-xs tracking-widest uppercase">
+              Humans first
+            </span>
+            <h3 className="font-serif text-2xl md:text-3xl text-ink mt-2 leading-snug">
+              Behind every citation, a person who&apos;s been there.
+            </h3>
+            <p className="text-ink/55 text-base mt-4 leading-relaxed">
+              Monks, historians, licensed guides, Tourist Police, park rangers,
+              and the travelers who walked the route before you — every fact in
+              Amazing Thailand Plus traces back to a name and a face. AI is the
+              assistant. Trust is the product.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

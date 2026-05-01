@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import TempleSceneSVG from "./TempleSceneSVG";
+import Image from "next/image";
 import FloatingParticles from "./FloatingParticles";
 import { LotusBloom, ThaiSectionDivider } from "./ThaiOrnament";
+import { IMAGES } from "@/data/images";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -20,16 +21,38 @@ export default function FinalCTA() {
     <section className="relative py-32 px-4 overflow-hidden"
       style={{ background: "linear-gradient(180deg, #F5EDD6 0%, #EDD9B0 40%, #F5EDD6 100%)" }}
     >
-      {/* Warm gold glow */}
+      {/* Photographic backdrop — Phi Phi sunrise (aspirational journey) */}
+      <Image
+        src={IMAGES.coast.phiPhiSunrise}
+        alt=""
+        fill
+        sizes="100vw"
+        className="object-cover"
+      />
+      {/* Parchment veil — stronger in the middle band where text sits */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,146,42,0.12) 0%, transparent 70%)" }}
+        style={{
+          background:
+            "linear-gradient(180deg, #F5EDD6 0%, rgba(245,237,214,0.55) 18%, rgba(245,237,214,0.70) 50%, rgba(245,237,214,0.55) 85%, #F5EDD6 100%)",
+        }}
       />
-      <TempleSceneSVG className="opacity-80" />
-      <FloatingParticles />
+      {/* Centred radial spotlight — parchment haze right behind the headline */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 65% 55% at 50% 50%, rgba(245,237,214,0.35) 0%, transparent 75%)",
+        }}
+      />
 
-      <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-page to-transparent pointer-events-none" />
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-page to-transparent pointer-events-none" />
+      {/* Warm gold glow accent — additive light, not a wash */}
+      <div
+        className="absolute inset-0 pointer-events-none mix-blend-screen"
+        style={{ background: "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,146,42,0.18) 0%, transparent 70%)" }}
+      />
+
+      <FloatingParticles />
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <motion.div
@@ -51,7 +74,7 @@ export default function FinalCTA() {
 
           <motion.h2
             variants={itemVariants}
-            className="font-serif font-bold leading-tight mb-6"
+            className="font-serif font-bold leading-tight mb-6 [text-shadow:0_2px_16px_rgba(245,237,214,0.9)]"
             style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)" }}
           >
             <span className="text-ink">Turn every trip into</span>
@@ -61,7 +84,7 @@ export default function FinalCTA() {
 
           <motion.p
             variants={itemVariants}
-            className="text-ink/55 text-lg max-w-2xl mx-auto mb-12 leading-relaxed"
+            className="text-ink/75 text-lg max-w-2xl mx-auto mb-12 leading-relaxed [text-shadow:0_1px_6px_rgba(245,237,214,0.85)]"
           >
             Join thousands of travelers who explore Thailand with verified routes,
             expert guides, and an AI companion that knows when not to guess.

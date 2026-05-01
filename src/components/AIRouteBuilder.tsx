@@ -4,8 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Sparkles, MapPin, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { getProvider } from "@/lib/ai/provider";
 import type { GeneratedRoute } from "@/lib/ai/types";
+import { IMAGES } from "@/data/images";
 
 const interests = ["Culture", "History", "Nature", "Food", "Adventure", "Film & Series", "Wellness"];
 const durations = [1, 3, 7];
@@ -50,8 +52,26 @@ export default function AIRouteBuilder() {
   };
 
   return (
-    <section id="ai-builder" className="py-24 px-4 bg-page">
-      <div className="max-w-6xl mx-auto">
+    <section id="ai-builder" className="relative py-24 px-4 bg-page overflow-hidden">
+      {/* Soft food-market atmosphere — Yaowarat at sunset */}
+      <div className="absolute inset-0 pointer-events-none">
+        <Image
+          src={IMAGES.food.yaowarat}
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover opacity-[0.18]"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, #F5EDD6 0%, rgba(245,237,214,0.78) 25%, rgba(245,237,214,0.78) 75%, #F5EDD6 100%)",
+          }}
+        />
+      </div>
+
+      <div className="relative max-w-6xl mx-auto">
         <div className="text-center mb-4">
           <span className="text-gold font-mono text-xs tracking-widest uppercase">
             Powered by AI · Grounded in Truth
